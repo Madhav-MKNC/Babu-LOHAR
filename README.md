@@ -1,2 +1,2 @@
 # Babu-LOHAR
-A Slack Bot powered by the advanced LLM model for interacting with Your uploaded PDFs
+A Slack Bot powered by an advanced LLM model for interacting with Your uploaded PDFs
