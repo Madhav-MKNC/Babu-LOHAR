@@ -1,0 +1,8 @@
+langchain
+openai
+tiktoken
+pinecone-client
+chromadb
+pymupdf
+pypdf
+pycryptodome
