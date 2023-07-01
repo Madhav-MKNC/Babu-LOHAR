@@ -42,13 +42,14 @@ def hears():
     thread = message.get("ts")
 
     print("------------------------- start ---------------------------")
+    """ ERROR IS THAT WHEN USING BABU_LOHAR IT IS REPLYING MORE THAN ONCE """
     print(message)
     # if bot was mentioned (except be itself)
     if 'bot_id' not in message:
       try:
         if message["blocks"][0]["elements"][0]["elements"][0][
             "user_id"] == "U05FA5J3MMX":
-          send_message(channel,
+          send_message(channel=channel,
                        reply=babulohar.get_response(text),
                        user=user,
                        thread_ts=thread)
