@@ -13,6 +13,7 @@ from langchain.document_loaders import TextLoader
 
 
 class API_KEYS_ERROR(Exception):
+
   def __init__():
     super().__init__("Set required API Keys and all")
 
@@ -45,10 +46,8 @@ class BabuLohar:
 
   # Splitting the data
   def _split(self, docs):
-    text_splitter = RecursiveCharacterTextSplitter(
-      chunk_size=512,
-      chunk_overlap=10
-    )
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=512,
+                                                   chunk_overlap=10)
     texts = text_splitter.split_documents(docs)
     return texts
 
@@ -59,19 +58,15 @@ class BabuLohar:
 
     # Set the directory path for persistence
     persist_directory = "./ok"
-    if not os.path.exists(persist_directory):
-      os.makedirs(persist_directory)
 
     # loading PDF documents from a directory
     self.load_PDFs_from_dir(dir_path=dir_path)
 
     # NOTE: Using ChromaDB here
     # Vector Store  (chromadb)
-    vectordb = Chroma.from_documents(
-      documents=self._split(self.documents),
-      embedding=embeddings,
-      persist_directory=persist_directory
-    )
+    vectordb = Chroma.from_documents(documents=self._split(self.documents),
+                                     embedding=embeddings,
+                                     persist_directory=persist_directory)
 
     # Persist the vector store to the specified directory
     vectordb.persist()
@@ -86,8 +81,7 @@ class BabuLohar:
     qa = RetrievalQA.from_chain_type(
       llm=ChatOpenAI(model_name='gpt-3.5-turbo'),
       chain_type="stuff",
-      retriever=retriever
-    )
+      retriever=retriever)
 
     # return the model
     return qa

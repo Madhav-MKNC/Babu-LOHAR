@@ -17,28 +17,23 @@ pinecone_environment = os.environ["PINECONE_ENV"]
 app = Flask('')
 
 # Initializing BabuLohar model
-babulohar = BabuLohar(
-  openai_api=openai_api_key,
-  pinecone_api=pinecone_api_key,
-  pinecone_env=pinecone_environment
-)
+babulohar = BabuLohar(openai_api=openai_api_key,
+                      pinecone_api=pinecone_api_key,
+                      pinecone_env=pinecone_environment)
 
 
 # PDFs handler
-def handle_attachments(slack_event):
+def handle_attachments(attachments):
   uploaded_pdfs = "./uploaded"
   if not os.path.exists(uploaded_pdfs):
     os.makedirs(uploaded_pdfs)
 
-  attachments = slack_event["event"]["attachments"]
   file_name = attachments[0].get("title")
   file_path = os.path.join(uploaded_pdfs, file_name)
 
-  if not file_name.endswith(".pdf"):
-    send_message(
-      channel="#testing",
-      text=f"Error {file_name}: only PDFs are allowed"
-    )
+  if file_name.split('.')[-1].lower() != "pdf":
+    send_message(channel="#uploadpdfs",
+                 text=f"Error {file_name}: only PDFs are allowed")
   elif attachments[0].get("original_url"):
     file_url = attachments[0]["original_url"]
     response = requests.get(file_url)
@@ -52,9 +47,11 @@ def handle_attachments(slack_event):
       babulohar.process(uploaded_pdfs)
       send_message(channel="#uploadpdfs", text=f"Loaded {file_name}")
     else:
-      send_message(channel="#testing", text=f"Failed to download {file_name}")
+      send_message(channel="#uploadpdfs",
+                   text=f"Failed to download {file_name}")
   else:
-    send_message(channel="#testing", text=f"Please try again for: {file_name}")
+    send_message(channel="#uploadpdfs",
+                 text=f"Please try again for: {file_name}")
 
 
 # event handler
@@ -63,25 +60,28 @@ def handle_events(slack_event):
   channel = message["channel"]
   # user = message.get("user") # might use for authorizing users in later versions
   thread = message.get("ts")
-
+  # print()
+  # print(message)
+  # print()
   if 'bot_id' not in message:  # if the sender is not bot
     try:  # detect mentions
       if message["blocks"][0]["elements"][0]["elements"][0][
-          "user_id"] == "U05FA5J3MMX":  # if the bot was mentioned
-        if slack_event["event"].get("attachments"):  # found attachments
-          handle_attachments(slack_event)
+          "user_id"] == "U05FQEE5L3T":  # if the bot was mentioned
+        if message.get("attachments"):  # found attachments
+          print("found attachments")
+          attachments = message["attachments"]
+          handle_attachments(attachments)
+
         else:  # if only text
           text = message.get("text")
           bot_reply(channel=channel,
                     reply=babulohar.get_response(text),
                     thread_ts=thread)
-        print("I WAS MENTIONED")
-
+        return
       else:
-        print("SOMEBODY WAS MENTIONED")
+        return
     except:
-      print("NOBODY GOT MENTIONED")
-  print("######################### end ###############################")
+      return
 
 
 # for keeping the bot alive
@@ -102,7 +102,9 @@ def hears():
 
   # events handler
   if "event" in slack_event and slack_event["event"]["type"] == "message":
-    handle_events(slack_event)
+    if slack_event.get("event_id") != request.headers.get(
+        "X-Slack-Retry-Reason"):
+      handle_events(slack_event)
 
   # response
   return make_response("Event received", 200)
