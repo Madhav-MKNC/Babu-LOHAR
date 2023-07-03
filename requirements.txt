@@ -7,3 +7,8 @@ pymupdf
 pypdf
 pycryptodome
 requests
+slackeventsapi
+slack
+waitress 
+flask
+slackclient
