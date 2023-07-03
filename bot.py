@@ -6,14 +6,9 @@ from slackeventsapi import SlackEventAdapter
 from slack import WebClient
 
 # Credentials
-slack_token = os.environ[
-  "SLACK_BOT_CLIENT"] = ""
-
-slack_signing_secret = os.environ[
-  'SLACK_SIGNING_SECRET'] = ""
-
-slack_app_token = os.environ[
-  "SLACK_APP_TOKEN"] = ""
+slack_token = os.environ["SLACK_BOT_CLIENT"]
+slack_signing_secret = os.environ['SLACK_SIGNING_SECRET']
+slack_app_token = os.environ["SLACK_APP_TOKEN"]
 
 # MESSAGE_BLOCK = {"type": "section", "text": {"type": "mrkdwn", "text": ""}}
 
@@ -37,14 +32,20 @@ slack_events_adapter = SlackEventAdapter(signing_secret=slack_signing_secret,
 #                                       thread_ts=message.get("ts"))
 
 
-def send_message(channel, reply, user, thread_ts):
+# send message to channel
+def send_message(channel="testing", text="Pehna ky he!"):
+  slack_web_client.chat_postMessage(channel=channel, text=text)
+
+
+# reply to
+def bot_reply(channel, reply, thread_ts):
   slack_web_client.chat_postMessage(channel=channel,
                                     text=reply,
                                     thread_ts=thread_ts)
 
 
 def start_bot_server():
-  slack_web_client.chat_postMessage(channel="#cryptollm", text="Pehna ky he!")
+  send_message()
   slack_events_adapter.start(port=7000)
 
 
