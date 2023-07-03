@@ -33,7 +33,7 @@ slack_events_adapter = SlackEventAdapter(signing_secret=slack_signing_secret,
 
 
 # send message to channel
-def send_message(channel="testing", text="Pehna ky he!"):
+def send_message(channel="testing", text="I am online!"):
   slack_web_client.chat_postMessage(channel=channel, text=text)
 
 
