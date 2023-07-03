@@ -51,6 +51,8 @@ def handle_attachments(slack_event):
       babulohar.add_PDF(file_path)
       babulohar.process(uploaded_pdfs)
       send_message(channel="#uploadpdfs", text=f"Loaded {file_name}")
+    else:
+      send_message(channel="#testing", text=f"Failed to download {file_name}")
   else:
     send_message(channel="#testing", text=f"Please try again for: {file_name}")
 
