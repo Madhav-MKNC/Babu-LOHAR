@@ -59,6 +59,8 @@ class BabuLohar:
 
     # Set the directory path for persistence
     persist_directory = "./ok"
+    if not os.path.exists(persist_directory):
+      os.makedirs(persist_directory)
 
     # loading PDF documents from a directory
     self.load_PDFs_from_dir(dir_path=dir_path)
