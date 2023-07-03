@@ -12,6 +12,7 @@ import requests
 openai_api_key = os.environ["OPENAI_API_KEY"]
 pinecone_api_key = os.environ["PINECONE_API_KEY"]
 pinecone_environment = os.environ["PINECONE_ENV"]
+bot_app_id = os.environ["BOT_APP_ID"]
 
 # Initializing Flask app
 app = Flask('')
@@ -60,13 +61,13 @@ def handle_events(slack_event):
   channel = message["channel"]
   # user = message.get("user") # might use for authorizing users in later versions
   thread = message.get("ts")
-  # print()
-  # print(message)
-  # print()
+  print()
+  print(message)
+  print()
   if 'bot_id' not in message:  # if the sender is not bot
     try:  # detect mentions
       if message["blocks"][0]["elements"][0]["elements"][0][
-          "user_id"] == "U05FQEE5L3T":  # if the bot was mentioned
+          "user_id"] == bot_app_id:  # if the bot was mentioned
         if message.get("attachments"):  # found attachments
           print("found attachments")
           attachments = message["attachments"]
@@ -90,7 +91,7 @@ def home():
   return "Web-server for centauri slack bot in crypto<>llm is online"
 
 
-# listening for events on the bot
+# listening for events from the bot
 @app.route("/listening", methods=["GET", "POST"])
 def hears():
   slack_event = request.get_json()
