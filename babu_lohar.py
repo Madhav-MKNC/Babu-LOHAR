@@ -24,11 +24,17 @@ class BabuLohar:
   def __init__(self, openai_api='', pinecone_api='', pinecone_env=''):
     if openai_api == '' or pinecone_api == '' == pinecone_env == '':
       raise API_KEYS_ERROR
+
     # Set the OpenAI API key
     os.environ["OPENAI_API_KEY"] = openai_api
+
     # Initialize Pinecone
     pinecone.init(api_key=pinecone_api, environment=pinecone_env)
+
     # model
+    self.persist_directory = "./ok"  # path for persistence
+    if not os.path.exists(self.persist_directory):
+      os.makedirs(self.persist_directory)
     self.documents = []
     self.QA = self.process("./data")
 
@@ -56,9 +62,6 @@ class BabuLohar:
     # Create an instance of OpenAIEmbeddings
     embeddings = OpenAIEmbeddings()
 
-    # Set the directory path for persistence
-    persist_directory = "./ok"
-
     # loading PDF documents from a directory
     self.load_PDFs_from_dir(dir_path=dir_path)
 
@@ -66,7 +69,7 @@ class BabuLohar:
     # Vector Store  (chromadb)
     vectordb = Chroma.from_documents(documents=self._split(self.documents),
                                      embedding=embeddings,
-                                     persist_directory=persist_directory)
+                                     persist_directory=self.persist_directory)
 
     # Persist the vector store to the specified directory
     vectordb.persist()

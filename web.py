@@ -5,9 +5,8 @@ from threading import Thread
 from waitress import serve
 from bot import handle_events
 
-
 # Initializing Flask app
-app = Flask(__init__)
+app = Flask(__name__)
 
 
 # for keeping the bot alive

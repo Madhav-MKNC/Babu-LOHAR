@@ -14,17 +14,16 @@ pinecone_api_key = os.environ["PINECONE_API_KEY"]
 pinecone_environment = os.environ["PINECONE_ENV"]
 bot_app_id = os.environ["BOT_APP_ID"]
 
-
 # Initializing BabuLohar model
 babulohar = BabuLohar(openai_api=openai_api_key,
                       pinecone_api=pinecone_api_key,
                       pinecone_env=pinecone_environment)
 
-
 # Initializing slack web client and slack_events_adapter
 slack_web_client = WebClient(token=slack_token)
 slack_events_adapter = SlackEventAdapter(signing_secret=slack_signing_secret,
-                                         endpoint="/listening")                                       
+                                         endpoint="/listening")
+
 
 # send message to channel
 def send_message(channel="testing_bot", text="I am online!"):
