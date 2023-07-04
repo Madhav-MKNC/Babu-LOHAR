@@ -3,10 +3,8 @@
 from flask import Flask, request, make_response
 from threading import Thread
 from waitress import serve
-from bot import bot_reply, send_message
-from babu_lohar import BabuLohar
-import os
-import requests
+from bot import handle_events, handle_attachments
+
 
 # Initializing Flask app
 app = Flask(__init__)
