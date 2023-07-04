@@ -23,7 +23,7 @@ babulohar = BabuLohar(openai_api=openai_api_key,
 # Initializing slack web client and slack_events_adapter
 slack_web_client = WebClient(token=slack_token)
 slack_events_adapter = SlackEventAdapter(signing_secret=slack_signing_secret,
-                                         endpoint="/listening")                                       thread_ts=message.get("ts"))
+                                         endpoint="/listening")                                       
 
 # send message to channel
 def send_message(channel="testing_bot", text="I am online!"):
