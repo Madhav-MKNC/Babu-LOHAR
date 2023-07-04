@@ -8,81 +8,8 @@ from babu_lohar import BabuLohar
 import os
 import requests
 
-# API keys
-openai_api_key = os.environ["OPENAI_API_KEY"]
-pinecone_api_key = os.environ["PINECONE_API_KEY"]
-pinecone_environment = os.environ["PINECONE_ENV"]
-bot_app_id = os.environ["BOT_APP_ID"]
-
 # Initializing Flask app
-app = Flask('')
-
-# Initializing BabuLohar model
-babulohar = BabuLohar(openai_api=openai_api_key,
-                      pinecone_api=pinecone_api_key,
-                      pinecone_env=pinecone_environment)
-
-
-# PDFs handler
-def handle_attachments(attachments):
-  uploaded_pdfs = "./uploaded"
-  if not os.path.exists(uploaded_pdfs):
-    os.makedirs(uploaded_pdfs)
-
-  file_name = attachments[0].get("title")
-  file_path = os.path.join(uploaded_pdfs, file_name)
-
-  if file_name.split('.')[-1].lower() != "pdf":
-    send_message(channel="#uploadpdfs",
-                 text=f"Error {file_name}: only PDFs are allowed")
-  elif attachments[0].get("original_url"):
-    file_url = attachments[0]["original_url"]
-    response = requests.get(file_url)
-    if response.status_code == 200:
-      with open(file_path, "wb") as file:
-        file.write(response.content)
-      send_message(channel="#uploadpdfs",
-                   text=f"Successfuly uploaded {file_name}")
-
-      babulohar.add_PDF(file_path)
-      babulohar.process(uploaded_pdfs)
-      send_message(channel="#uploadpdfs", text=f"Loaded {file_name}")
-    else:
-      send_message(channel="#uploadpdfs",
-                   text=f"Failed to download {file_name}")
-  else:
-    send_message(channel="#uploadpdfs",
-                 text=f"Please try again for: {file_name}")
-
-
-# event handler
-def handle_events(slack_event):
-  message = slack_event["event"]
-  channel = message["channel"]
-  # user = message.get("user") # might use for authorizing users in later versions
-  thread = message.get("ts")
-  print()
-  print(message)
-  print()
-  if 'bot_id' not in message:  # if the sender is not bot
-    try:  # detect mentions
-      if message["blocks"][0]["elements"][0]["elements"][0][
-          "user_id"] == bot_app_id:  # if the bot was mentioned
-        if message.get("attachments"):  # found attachments
-          print("found attachments")
-          attachments = message["attachments"]
-          handle_attachments(attachments)
-
-        else:  # if only text
-          text = message.get("text")
-          bot_reply(channel=channel,
-                    reply=babulohar.get_response(text),
-                    thread_ts=thread)
-        return
-      else:
-        return
-    except:
-      return
+app = Flask(__init__)
 
 
 # for keeping the bot alive
