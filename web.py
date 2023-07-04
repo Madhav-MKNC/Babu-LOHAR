@@ -3,7 +3,7 @@
 from flask import Flask, request, make_response
 from threading import Thread
 from waitress import serve
-from bot import handle_events, handle_attachments
+from bot import handle_events
 
 
 # Initializing Flask app
