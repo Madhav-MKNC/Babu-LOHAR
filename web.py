@@ -27,9 +27,7 @@ def hears():
 
   # events handler
   if "event" in slack_event and slack_event["event"]["type"] == "message":
-    if slack_event.get("event_id") != request.headers.get(
-        "X-Slack-Retry-Reason"):
-      handle_events(slack_event)
+    handle_events(slack_event)
 
   # response
   return make_response("Event received", 200)

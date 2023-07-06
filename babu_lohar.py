@@ -8,8 +8,6 @@ from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA
-from langchain.document_loaders import Docx2txtLoader
-from langchain.document_loaders import TextLoader
 
 
 class API_KEYS_ERROR(Exception):
@@ -46,7 +44,6 @@ class BabuLohar:
         pdf_path = os.path.join(dir_path, file)
         loader = PyMuPDFLoader(pdf_path)
         self.documents.extend(loader.load())
-    print(f"[+] loaded '{pdf_path}'")
     print(f"[+] '{dir_path}' directory loaded")
     return self.documents
 

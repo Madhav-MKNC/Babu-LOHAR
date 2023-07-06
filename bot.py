@@ -4,7 +4,6 @@ import os
 from slackeventsapi import SlackEventAdapter
 from slack import WebClient
 from babu_lohar import BabuLohar
-import requests
 
 # Credentials
 slack_token = os.environ["SLACK_BOT_CLIENT"]
@@ -27,7 +26,7 @@ bot_app_id = slack_web_client.api_call("auth.test")['user_id']
 
 
 # send message to channel
-def send_message(channel="testing_bot", text="I am online!"):
+def send_message(channel="testing", text="I am online!"):
   slack_web_client.chat_postMessage(channel=channel, text=text)
 
 
@@ -38,66 +37,32 @@ def bot_reply(channel, reply, thread_ts):
                                     thread_ts=thread_ts)
 
 
-# PDFs handler
-def handle_attachments(attachments):
-  uploaded_pdfs = "./uploaded"
-  if not os.path.exists(uploaded_pdfs):
-    os.makedirs(uploaded_pdfs)
-
-  file_name = attachments[0].get("title")
-  file_path = os.path.join(uploaded_pdfs, file_name)
-
-  if file_name.split('.')[-1].lower() != "pdf":
-    send_message(channel="#uploadpdfs",
-                 text=f"Error {file_name}: only PDFs are allowed")
-  elif attachments[0].get("original_url"):
-    file_url = attachments[0]["original_url"]
-    response = requests.get(file_url)
-    if response.status_code == 200:
-      with open(file_path, "wb") as file:
-        file.write(response.content)
-      send_message(channel="#uploadpdfs",
-                   text=f"Successfuly uploaded {file_name}")
-
-      babulohar.add_PDF(file_path)
-      babulohar.process(uploaded_pdfs)
-      send_message(channel="#uploadpdfs", text=f"Loaded {file_name}")
-    else:
-      send_message(channel="#uploadpdfs",
-                   text=f"Failed to download {file_name}")
-  else:
-    send_message(channel="#uploadpdfs",
-                 text=f"Please try again for: {file_name}")
-
-
 # event handler
+# NOTE: jugaad for stopping multiple replies
+previous_timestamp = 0
+
+
 def handle_events(slack_event):
   message = slack_event["event"]
   channel = message["channel"]
-  # user = message.get("user") # might use for authorizing users in later versions
+  user = message.get("user")
+  text = message.get("text")
   thread = message.get("ts")
   print()
   print(message)
   print()
-  if 'bot_id' not in message:  # if the sender is not bot
+  if user != bot_app_id:  # if the sender is not bot
+    global previous_timestamp
+    if thread == previous_timestamp: return
+    else: previous_timestamp = thread
     try:  # detect mentions
       if message["blocks"][0]["elements"][0]["elements"][0][
           "user_id"] == bot_app_id:  # if the bot was mentioned
-        if message.get("attachments"):  # found attachments
-          print("found attachments")
-          attachments = message["attachments"]
-          handle_attachments(attachments)
-
-        else:  # if only text
-          text = message.get("text")
-          bot_reply(channel=channel,
-                    reply=babulohar.get_response(text),
-                    thread_ts=thread)
-        return
-      else:
-        return
+        bot_reply(channel=channel,
+                  reply=babulohar.get_response(text),
+                  thread_ts=thread)
     except:
-      return
+      pass
 
 
 def start_bot_server():
