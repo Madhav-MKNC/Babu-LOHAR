@@ -13,7 +13,6 @@ slack_app_token = os.environ["SLACK_APP_TOKEN"]
 openai_api_key = os.environ["OPENAI_API_KEY"]
 pinecone_api_key = os.environ["PINECONE_API_KEY"]
 pinecone_environment = os.environ["PINECONE_ENV"]
-bot_app_id = os.environ["BOT_APP_ID"]
 
 # Initializing BabuLohar model
 babulohar = BabuLohar(openai_api=openai_api_key,
@@ -24,6 +23,7 @@ babulohar = BabuLohar(openai_api=openai_api_key,
 slack_web_client = WebClient(token=slack_token)
 slack_events_adapter = SlackEventAdapter(signing_secret=slack_signing_secret,
                                          endpoint="/listening")
+bot_app_id = slack_web_client.api_call("auth.test")['user_id']
 
 
 # send message to channel
