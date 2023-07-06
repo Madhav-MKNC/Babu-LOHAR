@@ -26,7 +26,7 @@ bot_app_id = slack_web_client.api_call("auth.test")['user_id']
 
 
 # send message to channel
-def send_message(channel="testing", text="I am online!"):
+def send_message(channel="testing", text="I am single!"):
   slack_web_client.chat_postMessage(channel=channel, text=text)
 
 
