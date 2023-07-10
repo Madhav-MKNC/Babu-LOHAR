@@ -1,8 +1,9 @@
 # ##### babu_lohar.py ####
 
 import os
+import sys
 import pinecone
-from langchain import OpenAI, PromptTemplate
+from langchain import OpenAI
 from langchain.document_loaders import PyMuPDFLoader, PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
@@ -40,13 +41,19 @@ class BabuLohar:
 
   # Loading from a directory
   def load_PDFs_from_dir(self, dir_path='.'):
+    nodata = True
     for file in os.listdir(dir_path):
       if file.endswith('.pdf'):
         print(f"[*] loading {file}")
         pdf_path = os.path.join(dir_path, file)
         loader = PyMuPDFLoader(pdf_path)
         self.documents.extend(loader.load())
-    print(f"[+] loaded '{pdf_path}'")
+        print(f"[+] loaded '{pdf_path}'")
+        nodata = False
+
+    if nodata:
+      print("[!] No data Loaded")
+      sys.exit()
     print(f"[+] '{dir_path}' directory loaded")
     return self.documents
 
