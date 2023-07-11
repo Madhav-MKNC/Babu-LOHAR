@@ -2,20 +2,26 @@
 
 import os
 import sys
+
 import pinecone
-from langchain import OpenAI
-from langchain.document_loaders import PyMuPDFLoader, PyPDFLoader
+
+from langchain.document_loaders import (PyPDFLoader, CSVLoader,
+                                        UnstructuredExcelLoader, TextLoader,
+                                        Docx2txtLoader, YoutubeLoader)
+
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
 from langchain.embeddings import OpenAIEmbeddings
 from langchain.chat_models import ChatOpenAI
+from langchain import OpenAI
 from langchain.chains import RetrievalQA
 from langchain.chains.summarize import load_summarize_chain
 
 
+# API Keys Error
 class API_KEYS_ERROR(Exception):
 
-  def __init__():
+  def __init__(self):
     super().__init__("Set required API Keys and all")
 
 
@@ -38,6 +44,9 @@ class BabuLohar:
       os.makedirs(self.persist_directory)
     self.documents = []
     self.QA = self.process("./data")
+
+    # summarizer
+    self.summarizer = Summarizer()
 
   # Loading from a directory
   def load_PDFs_from_dir(self, dir_path='.'):
@@ -102,18 +111,55 @@ class BabuLohar:
     return response
 
   # summarizer
-  def summarize(self, pdf_path):
-    llm = OpenAI(temperature=0)
-    loader = PyPDFLoader(pdf_path)
+  def summarize(self, content):
+    if 'http' in content:
+      if content.startswith("https://www.youtube.com"):
+        return self.summarizer.summarize_yt(content)
+      else:
+        return "This Loader is under development"
+    else:
+      return self.summarizer.summarize_file(content)
+
+
+# Summarizer
+class Summarizer:
+
+  def __init__(self):
+    self.llm = OpenAI(temperature=0)
+
+  def summarize_file(self, filepath):
+
+    if filepath.endswith('.pdf'):
+      loader = PyPDFLoader(filepath)
+
+    if filepath.endswith('.csv'):
+      loader = CSVLoader(filepath)
+
+    if filepath.endswith('xlsx'):
+      loader = UnstructuredExcelLoader(filepath)
+
+    if filepath.endswith('.txt'):
+      loader = TextLoader(filepath)
+
+    if filepath.endswith('.doc'):
+      loader = Docx2txtLoader(filepath)
+
     docs = loader.load_and_split()
-    chain = load_summarize_chain(llm, chain_type="map_reduce")
+    chain = load_summarize_chain(llm=self.llm, chain_type="map_reduce")
+    summary = chain.run(docs)
+    return summary
+
+  def summarize_web(self, url):
+    pass
+
+  def summarize_yt(self, url):
+    loader = YoutubeLoader(video_id=url.split("=")[-1])
+    docs = loader.load_and_split()
+    chain = load_summarize_chain(llm=self.llm, chain_type="map_reduce")
     summary = chain.run(docs)
     return summary
 
 
 # main
 if __name__ == "__main__":
-  babu = BabuLohar()
-  query = 'tell me about yourself'
-  response = babu.get_response(query)
-  print(response)
+  x = Summarizer()
