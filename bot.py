@@ -38,8 +38,11 @@ def bot_reply(channel, reply, thread_ts):
                                     thread_ts=thread_ts)
 
 
-# PDFs handler
+# download files from attachments
+# allowed files: pdf, csv, xlsx, txt, doc
 def handle_attachments(attachment, channel, ts):
+  allowed_files = ["pdf", "csv", "xlsx", "txt", "doc"]
+
   uploaded_pdfs = "./uploaded"
   if not os.path.exists(uploaded_pdfs):
     os.makedirs(uploaded_pdfs)
@@ -51,9 +54,9 @@ def handle_attachments(attachment, channel, ts):
   print(file_name)
   print(file_path)
 
-  if attachment.get("filetype").lower() != "pdf":
+  if attachment.get("filetype").lower() not in allowed_files:
     return send_message(channel=channel,
-                        text=f"Error {file_name}: only PDFs are allowed")
+                        text=f"Error {file_name}: Filetype not allowed ")
   print(2)
 
   download_url = attachment.get("url_private")
@@ -68,8 +71,8 @@ def handle_attachments(attachment, channel, ts):
     with open(file_path, "wb") as file:
       file.write(response.content)
     print(f"Attachment downloaded to: {file_path}")
-    bot_reply(channel=channel, text=f"Loading '{file_name}'", thread_ts=ts)
-    print("\nkasa ho\n")
+    print(f"loading {file_name}", channel, ts)
+    bot_reply(channel=channel, text="Loading", thread_ts=ts)
     bot_reply(channel=channel,
               text=babulohar.summarize(file_path),
               thread_ts=ts)
@@ -79,6 +82,7 @@ def handle_attachments(attachment, channel, ts):
     bot_reply(channel=channel,
               text=f"Failed to load {file_name}",
               thread_ts=ts)
+  print("file handled")
 
 
 # event handler
@@ -106,14 +110,16 @@ def handle_events(slack_event):
     try:  # detect mentions
       if message["blocks"][0]["elements"][0]["elements"][0][
           "user_id"] == bot_app_id:  # if the bot was mentioned
-        if attachments:  # found attachments
+        if attachments:
           print("found attachments")
           handle_attachments(attachments[0], channel, thread)
-        else:  # reply to text
-          if 'summarize' in text:
+        else:
+          if 'summarize' in text:  # summarize the url
+            url = message["blocks"][0]["elements"][0]["elements"][2]["url"]
             bot_reply(channel=channel,
-                      reply=babulohar.summarize(str(text.split()[-1])))
-          else:
+                      reply=babulohar.summarize(url),
+                      thread_ts=thread)
+          else:  # qna with docs from ./data
             bot_reply(channel=channel,
                       reply=babulohar.get_response(text),
                       thread_ts=thread)
