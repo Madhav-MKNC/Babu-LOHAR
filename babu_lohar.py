@@ -5,7 +5,7 @@ import sys
 
 import pinecone
 
-from langchain.document_loaders import (PyPDFLoader, CSVLoader,
+from langchain.document_loaders import (PyPDFLoader, CSVLoader, PyMuPDFLoader,
                                         UnstructuredExcelLoader, TextLoader,
                                         Docx2txtLoader, YoutubeLoader)
 
@@ -18,19 +18,13 @@ from langchain.chains import RetrievalQA
 from langchain.chains.summarize import load_summarize_chain
 
 
-# API Keys Error
-class API_KEYS_ERROR(Exception):
-
-  def __init__(self):
-    super().__init__("Set required API Keys and all")
-
-
 # The Model
 class BabuLohar:
 
   def __init__(self, openai_api='', pinecone_api='', pinecone_env=''):
     if openai_api == '' or pinecone_api == '' == pinecone_env == '':
-      raise API_KEYS_ERROR
+      print("[!] API Keys not found!!")
+      exit()
 
     # Set the OpenAI API key
     os.environ["OPENAI_API_KEY"] = openai_api
@@ -39,9 +33,6 @@ class BabuLohar:
     pinecone.init(api_key=pinecone_api, environment=pinecone_env)
 
     # model
-    self.persist_directory = "./ok"  # path for persistence
-    if not os.path.exists(self.persist_directory):
-      os.makedirs(self.persist_directory)
     self.documents = []
     self.QA = self.process("./data")
 
@@ -66,14 +57,6 @@ class BabuLohar:
     print(f"[+] '{dir_path}' directory loaded")
     return self.documents
 
-  # Splitting the data
-  def _split(self, docs):
-    text_splitter = RecursiveCharacterTextSplitter(chunk_size=512,
-                                                   chunk_overlap=10)
-    texts = text_splitter.split_documents(docs)
-    return texts
-
-  # embeddings, vectore store and retrival
   def process(self, dir_path):
     # Create an instance of OpenAIEmbeddings
     embeddings = OpenAIEmbeddings()
@@ -81,11 +64,16 @@ class BabuLohar:
     # loading PDF documents from a directory
     self.load_PDFs_from_dir(dir_path=dir_path)
 
+    # splitting the data
+    text_splitter = RecursiveCharacterTextSplitter(chunk_size=512,
+                                                   chunk_overlap=10)
+    self.documents = text_splitter.split_documents(self.documents)
+
     # NOTE: Using ChromaDB here
     # Vector Store  (chromadb)
-    vectordb = Chroma.from_documents(documents=self._split(self.documents),
+    vectordb = Chroma.from_documents(documents=self.documents,
                                      embedding=embeddings,
-                                     persist_directory=self.persist_directory)
+                                     persist_directory="./persistence")
 
     # Persist the vector store to the specified directory
     vectordb.persist()
@@ -112,11 +100,18 @@ class BabuLohar:
 
   # summarizer
   def summarize(self, content):
+    # url input
     if 'http' in content:
+      
+      # youtube url
       if content.startswith("https://www.youtube.com"):
         return self.summarizer.summarize_yt(content)
+        
+      # other urls
       else:
-        return "This Loader is under development"
+        return "Error: Can not summarize, this Loader is under development."
+        
+    # file input
     else:
       return self.summarizer.summarize_file(content)
 
@@ -132,17 +127,20 @@ class Summarizer:
     if filepath.endswith('.pdf'):
       loader = PyPDFLoader(filepath)
 
-    if filepath.endswith('.csv'):
+    elif filepath.endswith('.csv'):
       loader = CSVLoader(filepath)
 
-    if filepath.endswith('xlsx'):
+    elif filepath.endswith('xlsx'):
       loader = UnstructuredExcelLoader(filepath)
 
-    if filepath.endswith('.txt'):
+    elif filepath.endswith('.txt'):
       loader = TextLoader(filepath)
 
-    if filepath.endswith('.doc'):
+    elif filepath.endswith('.doc'):
       loader = Docx2txtLoader(filepath)
+
+    else:
+      return "Error: This File Type is not supported"
 
     docs = loader.load_and_split()
     chain = load_summarize_chain(llm=self.llm, chain_type="map_reduce")
