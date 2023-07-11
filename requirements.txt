@@ -12,6 +12,6 @@ slack
 waitress 
 flask
 slackclient
-arxiv
-
-
+docx2txt
+youtube-transcript-api
+bs4

@@ -5,7 +5,9 @@ import sys
 
 import pinecone
 
-from langchain.document_loaders import (PyPDFLoader, CSVLoader, PyMuPDFLoader, UnstructuredWordDocumentLoader, UnstructuredExcelLoader, TextLoader, Docx2txtLoader, YoutubeLoader)
+from langchain.document_loaders import (PyPDFLoader, PyMuPDFLoader, TextLoader,
+                                        Docx2txtLoader, YoutubeLoader,
+                                        WebBaseLoader)
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
@@ -107,7 +109,7 @@ class BabuLohar:
 
       # other urls
       else:
-        return "Error: Can not summarize, this Loader is under development."
+        return self.summarizer.summarize_web(content)
 
     # file input
     else:
@@ -132,19 +134,24 @@ class Summarizer:
       loader = Docx2txtLoader(filepath)
 
     elif filepath.endswith('.docx'):
-      loader = UnstructuredWordDocumentLoader(filepath)
-      # loader = Docx2txtLoader(filepath)
+      loader = Docx2txtLoader(filepath)
 
     else:
       return "Error: This File Type is not supported"
 
     docs = loader.load_and_split()
+    print(docs)
     chain = load_summarize_chain(llm=self.llm, chain_type="map_reduce")
     summary = chain.run(docs)
     return summary
 
   def summarize_web(self, url):
-    pass
+    loader = WebBaseLoader(url)
+    docs = loader.load_and_split()
+    print(docs)
+    chain = load_summarize_chain(llm=self.llm, chain_type="map_reduce")
+    summary = chain.run(docs)
+    return summary
 
   def summarize_yt(self, url):
     if '=' not in url: return "Error: No YouTube video found"

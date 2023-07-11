@@ -41,7 +41,7 @@ def bot_reply(channel, reply, thread_ts):
 # download files from attachments
 # allowed files: pdf, txt, doc, docx
 def handle_attachments(attachment, channel, ts):
-  allowed_files = ["pdf", "csv", "xlsx", "txt", "doc", "docx"]
+  allowed_files = ["pdf", "txt", "doc", "docx"]
 
   uploaded_pdfs = "./uploaded"
   if not os.path.exists(uploaded_pdfs):
@@ -117,12 +117,13 @@ def handle_events(slack_event):
             bot_reply(channel=channel,
                       reply=babulohar.summarize(url),
                       thread_ts=thread)
+            print("\nsummarized\n")
           else:  # qna with docs from ./data
             bot_reply(channel=channel,
                       reply=babulohar.get_response(text),
                       thread_ts=thread)
-    except:
-      pass
+    except Exception as e:
+      print(e)
 
 
 # start bot server
