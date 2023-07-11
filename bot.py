@@ -27,7 +27,7 @@ bot_app_id = slack_web_client.api_call("auth.test")['user_id']
 
 
 # send message to channel
-def send_message(channel="testing", text="I am online!"):
+def send_message(channel="test_bot", text="I am online!"):
   slack_web_client.chat_postMessage(channel=channel, text=text)
 
 
@@ -39,7 +39,7 @@ def bot_reply(channel, reply, thread_ts):
 
 
 # PDFs handler
-def handle_attachments(attachment):
+def handle_attachments(attachment, channel, ts):
   uploaded_pdfs = "./uploaded"
   if not os.path.exists(uploaded_pdfs):
     os.makedirs(uploaded_pdfs)
@@ -52,7 +52,7 @@ def handle_attachments(attachment):
   print(file_path)
 
   if attachment.get("filetype").lower() != "pdf":
-    return send_message(channel="testing",
+    return send_message(channel=channel,
                         text=f"Error {file_name}: only PDFs are allowed")
   print(2)
 
@@ -67,12 +67,18 @@ def handle_attachments(attachment):
     print(31)
     with open(file_path, "wb") as file:
       file.write(response.content)
-      print(f"Attachment downloaded to: {file_path}")
-      send_message(channel="testing", text=babulohar.summarize(file_path))
+    print(f"Attachment downloaded to: {file_path}")
+    bot_reply(channel=channel, text=f"Loading '{file_name}'", thread_ts=ts)
+    print("\nkasa ho\n")
+    bot_reply(channel=channel,
+              text=babulohar.summarize(file_path),
+              thread_ts=ts)
   else:
     print(30)
     print("Failed to download attachment.")
-    send_message(channel="testing", text=f"Upload failed: {file_name}")
+    bot_reply(channel=channel,
+              text=f"Failed to load {file_name}",
+              thread_ts=ts)
 
 
 # event handler
@@ -102,11 +108,15 @@ def handle_events(slack_event):
           "user_id"] == bot_app_id:  # if the bot was mentioned
         if attachments:  # found attachments
           print("found attachments")
-          handle_attachments(attachments[0])
+          handle_attachments(attachments[0], channel, thread)
         else:  # reply to text
-          bot_reply(channel=channel,
-                    reply=babulohar.get_response(text),
-                    thread_ts=thread)
+          if 'summarize' in text:
+            bot_reply(channel=channel,
+                      reply=babulohar.summarize(str(text.split()[-1])))
+          else:
+            bot_reply(channel=channel,
+                      reply=babulohar.get_response(text),
+                      thread_ts=thread)
     except:
       pass
 
