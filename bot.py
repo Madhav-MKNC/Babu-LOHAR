@@ -39,9 +39,9 @@ def bot_reply(channel, reply, thread_ts):
 
 
 # download files from attachments
-# allowed files: pdf, csv, xlsx, txt, doc
+# allowed files: pdf, txt, doc, docx
 def handle_attachments(attachment, channel, ts):
-  allowed_files = ["pdf", "csv", "xlsx", "txt", "doc"]
+  allowed_files = ["pdf", "csv", "xlsx", "txt", "doc", "docx"]
 
   uploaded_pdfs = "./uploaded"
   if not os.path.exists(uploaded_pdfs):
@@ -54,9 +54,8 @@ def handle_attachments(attachment, channel, ts):
   print(file_name)
   print(file_path)
 
-  if attachment.get("filetype").lower() not in allowed_files:
-    return send_message(channel=channel,
-                        text=f"Error {file_name}: Filetype not allowed ")
+  if file_name.split('.')[-1].lower() not in allowed_files:
+    return bot_reply(channel, "Error: Filetype not allowed", ts)
   print(2)
 
   download_url = attachment.get("url_private")
@@ -72,16 +71,14 @@ def handle_attachments(attachment, channel, ts):
       file.write(response.content)
     print(f"Attachment downloaded to: {file_path}")
     print(f"loading {file_name}", channel, ts)
-    bot_reply(channel=channel, text="Loading", thread_ts=ts)
-    bot_reply(channel=channel,
-              text=babulohar.summarize(file_path),
-              thread_ts=ts)
+    # send_message(channel, "loading")
+    # send_message(channel, babulohar.summarize(file_path))
+    bot_reply(channel, "Loading...", ts)
+    bot_reply(channel, babulohar.summarize(file_path), ts)
   else:
     print(30)
     print("Failed to download attachment.")
-    bot_reply(channel=channel,
-              text=f"Failed to load {file_name}",
-              thread_ts=ts)
+    bot_reply(channel, f"Failed to load {file_name}", ts)
   print("file handled")
 
 
@@ -116,6 +113,7 @@ def handle_events(slack_event):
         else:
           if 'summarize' in text:  # summarize the url
             url = message["blocks"][0]["elements"][0]["elements"][2]["url"]
+            bot_reply(channel, "Loading URL...", thread)
             bot_reply(channel=channel,
                       reply=babulohar.summarize(url),
                       thread_ts=thread)

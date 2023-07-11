@@ -5,9 +5,7 @@ import sys
 
 import pinecone
 
-from langchain.document_loaders import (PyPDFLoader, CSVLoader, PyMuPDFLoader,
-                                        UnstructuredExcelLoader, TextLoader,
-                                        Docx2txtLoader, YoutubeLoader)
+from langchain.document_loaders import (PyPDFLoader, CSVLoader, PyMuPDFLoader, UnstructuredWordDocumentLoader, UnstructuredExcelLoader, TextLoader, Docx2txtLoader, YoutubeLoader)
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
@@ -102,15 +100,15 @@ class BabuLohar:
   def summarize(self, content):
     # url input
     if 'http' in content:
-      
+
       # youtube url
       if content.startswith("https://www.youtube.com"):
         return self.summarizer.summarize_yt(content)
-        
+
       # other urls
       else:
         return "Error: Can not summarize, this Loader is under development."
-        
+
     # file input
     else:
       return self.summarizer.summarize_file(content)
@@ -127,17 +125,15 @@ class Summarizer:
     if filepath.endswith('.pdf'):
       loader = PyPDFLoader(filepath)
 
-    elif filepath.endswith('.csv'):
-      loader = CSVLoader(filepath)
-
-    elif filepath.endswith('xlsx'):
-      loader = UnstructuredExcelLoader(filepath)
-
     elif filepath.endswith('.txt'):
       loader = TextLoader(filepath)
 
     elif filepath.endswith('.doc'):
       loader = Docx2txtLoader(filepath)
+
+    elif filepath.endswith('.docx'):
+      loader = UnstructuredWordDocumentLoader(filepath)
+      # loader = Docx2txtLoader(filepath)
 
     else:
       return "Error: This File Type is not supported"
@@ -151,6 +147,7 @@ class Summarizer:
     pass
 
   def summarize_yt(self, url):
+    if '=' not in url: return "Error: No YouTube video found"
     loader = YoutubeLoader(video_id=url.split("=")[-1])
     docs = loader.load_and_split()
     chain = load_summarize_chain(llm=self.llm, chain_type="map_reduce")
