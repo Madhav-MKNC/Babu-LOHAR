@@ -6,8 +6,8 @@ import sys
 import pinecone
 
 from langchain.document_loaders import (PyPDFLoader, PyMuPDFLoader, TextLoader,
-                                        Docx2txtLoader, YoutubeLoader,
-                                        WebBaseLoader)
+                                        Docx2txtLoader, WebBaseLoader,
+                                        YoutubeLoader)
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import Chroma
