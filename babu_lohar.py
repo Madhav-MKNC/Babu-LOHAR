@@ -46,8 +46,8 @@ class BabuLohar:
       if file.endswith('.pdf'):
         print(f"[*] loading {file}")
         pdf_path = os.path.join(dir_path, file)
-        loader = PyMuPDFLoader(pdf_path)
-        self.documents.extend(loader.load())
+        doc = PyMuPDFLoader(pdf_path).load()
+        self.documents.extend(doc)
         print(f"[+] loaded '{pdf_path}'")
         nodata = False
 
