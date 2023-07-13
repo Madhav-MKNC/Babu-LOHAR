@@ -13,6 +13,7 @@ slack_app_token = os.environ["SLACK_APP_TOKEN"]
 openai_api_key = os.environ["OPENAI_API_KEY"]
 pinecone_api_key = os.environ["PINECONE_API_KEY"]
 pinecone_environment = os.environ["PINECONE_ENV"]
+BOT_CHANNEL = "C05ENBGTJUT"
 
 # Initializing BabuLohar model
 babulohar = BabuLohar(openai_api=openai_api_key,
@@ -59,6 +60,7 @@ def handle_attachments(attachment, channel, ts):
   print(2)
 
   download_url = attachment.get("url_private")
+  print(attachment)
   print(2.1)
   headers = {"Authorization": f"Bearer {slack_token}"}
   print(2.2)
@@ -67,8 +69,8 @@ def handle_attachments(attachment, channel, ts):
 
   if response.status_code == 200:
     print(31)
-    with open(file_path, "wb") as file:
-      file.write(response.content)
+    with open(file_path, "wb") as downloaded:
+      downloaded.write(response.content)
     print(f"Attachment downloaded to: {file_path}")
     print(f"loading {file_name}", channel, ts)
     # send_message(channel, "loading")
@@ -99,20 +101,31 @@ def handle_events(slack_event):
   print(message)
   print()
 
+  print(channel, BOT_CHANNEL)
+
+  if channel != BOT_CHANNEL:  # channel is BOT_CHANNEL
+    return
+
   if user != bot_app_id:  # if the sender is not bot
     global previous_timestamp
     if thread == previous_timestamp: return
     else: previous_timestamp = thread
 
-    try:  # detect mentions
+    try:
       if message["blocks"][0]["elements"][0]["elements"][0][
-          "user_id"] == bot_app_id:  # if the bot was mentioned
+          "user_id"] == bot_app_id:
         if attachments:
           print("found attachments")
           handle_attachments(attachments[0], channel, thread)
         else:
-          if 'summarize' in text:  # summarize the url
+          flag = False
+          try:
             url = message["blocks"][0]["elements"][0]["elements"][2]["url"]
+            flag = True
+          except:
+            pass
+
+          if flag:  # if url found, summarize the url
             bot_reply(channel, "Loading URL...", thread)
             bot_reply(channel=channel,
                       reply=babulohar.summarize(url),
