@@ -1,4 +1,4 @@
-# Babu-Lohar: A Slack Bot Powered by Advanced LLM Model for Interacting with Uploaded PDFs
+# Babu-Lohar: A Slack Bot Powered by Advanced LLM Model for Interacting with Uploaded Documents
 
 ## Introduction
 Babu-Lohar is a versatile Slack Bot that is powered by an advanced Large Language Model (LLM). It is designed to interact with your uploaded Documents, extract useful information, and assist in analyzing and managing content.
@@ -45,7 +45,7 @@ Babu-Lohar is a versatile Slack Bot that is powered by an advanced Large Languag
    ```
 
 ## Usage
-Once Babu-Lohar is up and running, you can begin uploading PDFs to your Slack workspace. The bot will automatically process any PDFs uploaded to channels it is a member of.
+Once Babu-Lohar is up and running, you can begin uploading Documents to your Slack workspace. The bot will automatically process any Document uploaded to channels it is a member of.
 
 To interact with Babu-Lohar, simply mention the bot in a message.
 
@@ -53,7 +53,7 @@ To interact with Babu-Lohar, simply mention the bot in a message.
 Babu-Lohar is licensed under the [MIT License](LICENSE.md). 
 
 ## Acknowledgements
-We are grateful to OpenAI for their incredible GPT models which power Babu-Lohar. Additionally, we would like to express our thanks to hwchase17 for the Langchain framework, which has greatly contributed to the development of our project.
+We are grateful to @OpenAI for their incredible GPT models which power Babu-Lohar. Additionally, we would like to express our thanks to @hwchase17 for the Langchain framework, which has greatly contributed to the development of our project.
 
 ## Contact
 For any questions or concerns, please open an issue on GitHub or contact the maintainers directly.
